@@ -123,8 +123,8 @@ function initComponents()
     let vrataL1 =  initVrata('vrataL1', 'North');
     let vrataR1 =  initVrata('vrataR1', 'South');
     let platforma1 = initVrata('platforma1', 'West');
-    let vrataR2 =  initVrata('vrataR2', 'West');
-    let vrataL2 =  initVrata('vrataL2', 'East');
+    let vrataR2 =  initVrata('vrataR2', 'East');
+    let vrataL2 =  initVrata('vrataL2', 'West');
 
 
     let platforma2 = initVrata('platforma2', 'North');

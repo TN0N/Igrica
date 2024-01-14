@@ -3,6 +3,7 @@ import { Transform } from "./common/engine/core.js";
 import { getTransformedAABB } from "./common/engine/core/SceneUtils.js";
 import { LinearAnimator } from "./common/engine/animators/LinearAnimator.js";
 import { FirstPersonController } from "./common/engine/controllers/FirstPersonController.js";
+let bin;
 function grounded(a, b)
 {
     const aBox = getTransformedAABB(a);
@@ -67,7 +68,7 @@ export async function obnasanjeKocka(a, b, c)
             vec3.sub(transform.translation, transform.translation, [0,gravity,0]);
     }  
 }
-export function obnasanjeGumb(a, b, c)
+export function obnasanjeGumb(a, b, c, bin)
 {
     if (b.isGround)
         return;
@@ -75,6 +76,10 @@ export function obnasanjeGumb(a, b, c)
     {
         a.addComponent(new LinearAnimator(a, { startPosition: a.getComponentOfType(Transform).translation, endPosition: a.endPos, duration: 0.5, loop: false }));
         a.collidingObjects.push(b);
+        if(a.add1 == true){
+            bin.changeNumber(1);
+        }else if(a.add0)
+            bin.changeNumber(0);
         for (var i in a.bindings)
             openDoor(a.bindings[i]);
     }
@@ -84,6 +89,7 @@ export function obnasanjeGumb(a, b, c)
         a.collidingObjects.splice(a.collidingObjects.indexOf(b), 1);
         for (var i in a.bindings)
             openDoor(a.bindings[i]);
+
     }
 }
 export function obnasanjeStena(a, b, c)
@@ -95,7 +101,6 @@ export function obnasanjeCamera(a, b, c)
     {
         if (!b.isStatic)
             return false;
-        //console.log(a.velocity[0], a.velocity[1], a.velocity[2]);
         const aBox = getTransformedAABB(a);
         const bBox = getTransformedAABB(b);
         // Move node A minimally to avoid collision.

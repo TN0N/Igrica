@@ -13,6 +13,7 @@ import { UnlitRenderer } from './common/engine/renderers/UnlitRenderer.js';
 import { Physics } from "./Physics.js";
 import { calculateAxisAlignedBoundingBox, mergeAxisAlignedBoundingBoxes } from '../../../common/engine/core/MeshUtils.js';
 import { obnasanjeCamera, obnasanjeTla, obnasanjeGumb, obnasanjeKocka, obnasanjeStena, obnasanjeVrata } from "./Obnasanje.js";
+import { Binary } from "./Binary.js";
 async function init()
 {
     await initComponents();
@@ -34,6 +35,13 @@ function initComponents()
     tla.velocity = [0,0,0];
     tla.addComponent(new Physics(scene, tla));
     tla.action = obnasanjeTla;
+    let floorBin = gltfLoader.loadNode('floorBinary');
+    floorBin.isGround = true;
+    floorBin.velocity = [0,0,0];
+    floorBin.addComponent(new Physics(scene, floorBin));
+    floorBin.action = obnasanjeTla;
+    
+    
     //Init stene
     let stena01 = initStena('stena01');
     let stena02 = initStena('stena02');
@@ -64,6 +72,9 @@ function initComponents()
     let stena27 = initStena('stena27');
     let stena28 = initStena('stena28');
     let stena29 = initStena('stena29');
+    let stena30 = initStena('stena30');
+    let stena31 = initStena('stena31');
+    let stena32 = initStena('stena32');
     let pregrada11 = initStena('pregrada1.1');
     let pregrada12 = initStena('pregrada1.2');
     let pregrada13 = initStena('pregrada1.3');
@@ -79,6 +90,7 @@ function initComponents()
     let pregrada51 = initStena('pregrada5.1');
     let pregrada52 = initStena('pregrada5.2');
     let pregrada53 = initStena('pregrada5.3');
+    let door1 = initStena('door1');
 
     //Init kocke
     let kocka1 = initKocka('kocka1');
@@ -93,6 +105,7 @@ function initComponents()
     let kocka10 = initKocka('kocka10');
     let kocka11 = initKocka('kocka11');
     let kocka12 = initKocka('kocka12');
+    let kocka13 = initKocka('kocka13');
 
     //Init gumbi
     let gumb1 = initGumb('gumb1');
@@ -118,6 +131,8 @@ function initComponents()
     let gumb21 = initGumb('gumb21');
     let gumb22 = initGumb('gumb22');
     let gumb23 = initGumb('gumb23');
+    let gumb24 = initGumb('gumb24');
+    let gumb25 = initGumb('gumb25');
 
     //Init vrata
     let vrataL1 =  initVrata('vrataL1', 'North');
@@ -170,11 +185,16 @@ function initGumb(a)
     gumb.velocity = [0,0,0];
     gumb.isPushed = false;
     gumb.collidingObjects = [];
-    gumb.addComponent(new Physics(scene, gumb));
+    gumb.addComponent(new Physics(scene, gumb, bin));
     gumb.startPos = [...gumb.getComponentOfType(Transform).translation];
     gumb.endPos = [gumb.startPos[0], gumb.startPos[1]-0.25, gumb.startPos[2]];
     gumb.bindings = [];
     gumb.action = obnasanjeGumb;
+    if(a == 'gumb24'){
+        gumb.add0 = true;
+    }else if(a == 'gumb25'){
+        gumb.add1 = true;
+    }
     return gumb;
 }
 function initStena(a)
@@ -217,6 +237,9 @@ function bind(a = [], b = [])
             b[j].bindings.push(a[i]);
         }
 }
+var dotik = false;
+var koga_premaknem = null;
+
 function update(t, dt)
 {
     scene.traverse(node => {
@@ -225,6 +248,11 @@ function update(t, dt)
             component.update?.(t, dt);
         }
     })
+    //[dotik, koga_premaknem] = physics.updateD(dt);
+  
+    if(koga_premaknem != null){
+        bin.destroyPlatform(koga_premaknem);
+    }
 }
 
 function render()
@@ -244,21 +272,26 @@ await renderer.initialize();
 //Init scene
 const gltfLoader = new GLTFLoader();
 await gltfLoader.load("labirint.gltf");
-console.log(gltfLoader);
 
 const scene = gltfLoader.loadScene(gltfLoader.defaultScene);
+const bin = new Binary(scene, gltfLoader);
+
+const physics = new Physics(scene);
+bin.display0();
+
+bin.getEquasion();
+
 const camera = await gltfLoader.loadNode('Camera');
-console.log(camera);
 camera.addComponent(new FirstPersonController(camera, document.body));
 camera.addComponent(new Physics(scene, camera));
 camera.isDynamic = true;
 camera.isPlayer = true;
 camera.velocity = camera.getComponentOfType(FirstPersonController).velocity;
 camera.action = obnasanjeCamera;
-
-const model = await gltfLoader.loadMesh('playerbox')
+const model = await gltfLoader.loadMesh('playerbox');
 const box = model.primitives.map(primitive => calculateAxisAlignedBoundingBox(primitive.mesh));
 camera.aabb = mergeAxisAlignedBoundingBoxes(box);
+
 
 await init();
 new ResizeSystem({ canvas, resize }).start();
